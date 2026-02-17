@@ -16,9 +16,12 @@ Search (Chapters 3-4)
 The way to use this code is to subclass Problem to create a class of problems,
 then create problem instances and solve them with calls to the various search
 functions."""
-
+#imports needed for code 
 import sys
-
+import sys
+from collections import deque
+import heapq
+from subway import SubwayMap, build_boston_map, build_london_map, straight_line_distance
 #______________________________________________________________________________
 
 '''DO NOT MODIFY THIS CLASS'''
@@ -124,35 +127,179 @@ class Node:
 		return hash(self.id)
 
 #______________________________________________________________________________
-## Uninformed Search algorithms
+
+# Question 1/ (6 is also in here): Subway Navigation Problem
+class SubwayNavigationProblem(Problem):
+	"""A problem for finding a path between two subway stations."""
+	
+	def __init__(self, initial_station, goal_station, subway_map, radius=0):
+		"""
+		initial_station: Starting Station object
+		goal_station: Goal Station object
+		subway_map: SubwayMap object
+		radius: Optional distance in km - consider any station within this distance as a goal
+		"""
+		super().__init__(initial_station, goal_station)
+		self.subway_map = subway_map
+		self.radius = radius
+		
+	def successor(self, state):
+		"""Return (action, next_state) pairs for stations reachable from state."""
+		successors = []
+		for link in self.subway_map.incident_links(state):
+			next_station = link.opposite(state)
+			# action is link (contains route info)
+			successors.append((link, next_station))
+		return successors
+	
+	def goal_test(self, state):
+		"""Check if state is the goal or within radius of goal."""
+		if self.radius == 0:
+			return state == self.goal
+		else:
+			# Check if state is within radius of goal(km)
+			distance = straight_line_distance(state, self.goal)
+			return distance <= self.radius
+	
+	def path_cost(self, c, state1, action, state2):
+		"""Return cost of path. Action is a Link with distance."""
+		return c + action.get_distance()
+	
+	def h(self, node):
+		"""Heuristic: straight-line distance to goal station."""
+		return straight_line_distance(node.state, self.goal)
 
 '''DO NOT MODIFY THE HEADERS OF ANY OF THESE FUNCTIONS'''
 
 def breadth_first_search(problem):
-	'''YOUR CODE HERE'''
+	"""Breadth-first graph search algorithm."""
+	# early goal test for BFS
+	node = Node(problem.initial)
+	if problem.goal_test(node.state):
+		return node, 1
+	
+	frontier = deque([node])
+	explored = set()
+	nodes_visited = 0
+	
+	while frontier:
+		node = frontier.popleft()
+		nodes_visited += 1
+		explored.add(node.state)
+		
+		for child in node.expand(problem):
+			if child.state not in explored and child not in frontier:
+				if problem.goal_test(child.state):
+					return child, nodes_visited
+				frontier.append(child)
+	
+	return None, nodes_visited
 	pass
 	
 def depth_first_search(problem):
-	'''YOUR CODE HERE'''
-	pass
-
+	"""Depth-first graph search algorithm."""
+	node = Node(problem.initial)
+	frontier = [node]
+	explored = set()
+	nodes_visited = 0
+	
+	while frontier:
+		node = frontier.pop()
+		nodes_visited += 1
+		
+		if problem.goal_test(node.state):
+			return node, nodes_visited
+		
+		explored.add(node.state)
+		
+		for child in node.expand(problem):
+			if child.state not in explored and child not in frontier:
+				frontier.append(child)
+	
+	return None, nodes_visited
 def uniform_cost_search(problem):
-	'''YOUR CODE HERE'''
-	pass
+	"""Uniform-cost graph search algorithm."""
+	node = Node(problem.initial)
+	frontier = []
+	heapq.heappush(frontier, (node.path_cost, node))
+	explored = set()
+	nodes_visited = 0
+	
+	while frontier:
+		_, node = heapq.heappop(frontier)
+		nodes_visited += 1
+		
+		if problem.goal_test(node.state):
+			return node, nodes_visited
+		
+		explored.add(node.state)
+		
+		for child in node.expand(problem):
+			if child.state not in explored:
+				# check if child in frontier
+				in_frontier = False
+				for i, (priority, frontier_node) in enumerate(frontier):
+					if frontier_node.state == child.state:
+						in_frontier = True
+						# ff found with higher cost, replace 
+						if child.path_cost < priority:
+							frontier[i] = (child.path_cost, child)
+							heapq.heapify(frontier)
+						break
+				
+				if not in_frontier:
+					heapq.heappush(frontier, (child.path_cost, child))
+	
+	return None, nodes_visited
 #______________________________________________________________________________
 # Informed (Heuristic) Search
-
+#q5
 def astar_search(problem):
-	'''YOUR CODE HERE'''
-	pass
-
+	"""A* graph search algorithm."""
+	node = Node(problem.initial)
+	f_score = node.path_cost + problem.h(node)
+	frontier = []
+	heapq.heappush(frontier, (f_score, node))
+	explored = set()
+	nodes_visited = 0
+	
+	while frontier:
+		_, node = heapq.heappop(frontier)
+		nodes_visited += 1
+		
+		if problem.goal_test(node.state):
+			return node, nodes_visited
+		
+		explored.add(node.state)
+		
+		for child in node.expand(problem):
+			if child.state not in explored:
+				child_f = child.path_cost + problem.h(child)
+				
+				# check if child in frontier
+				in_frontier = False
+				for i, (priority, frontier_node) in enumerate(frontier):
+					if frontier_node.state == child.state:
+						in_frontier = True
+						# if higher f-score found, replace
+						if child_f < priority:
+							frontier[i] = (child_f, child)
+							heapq.heapify(frontier)
+						break
+				
+				if not in_frontier:
+					heapq.heappush(frontier, (child_f, child))
+	
+	return None, nodes_visited
 #______________________________________________________________________________
+#7 
+
 ## Main
 
 def main():
 	'''REPLACE THIS CODE WITH CODE THAT RUNS THE PROGRAM SPECIFIED IN THE COMMAND ARGUMENTS'''
 
 	print(sys.argv) # Prints the command line arguments. Note that the 0th element is the name of the file (search.py).
-	
+
 
 main()
