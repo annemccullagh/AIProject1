@@ -1,3 +1,4 @@
+"AI Project 1 Anne McCullagh, Luke Mele, Brady Galligan, Thomas Rua"
 import math
 import csv
 
