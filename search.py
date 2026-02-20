@@ -302,17 +302,52 @@ class EightPuzzleProblem(Problem):
 	
 	
 
-	def __init__(self, initial, goal=None):
-		super().__init__(initial, "123456780")
-		
-	def successor(self, state):
-		"""Given a state, return a sequence of (action, state) pairs reachable
-		from this state. If there are many successors, consider an iterator
-		that yields the successors one at a time, rather than building them
-		all at once. Iterators will work fine within the framework."""
-		raise NotImplementedError("successor() must be implemented in subclass")
+	def __init__(self, initial):
+		super().__init__(initial, "123456780") #Goal state never changes so no point taking it in constructor
 	
-	##UNNEEDED CUZ WE JUST NEED THEM TO DO WHAT THEY ALREADY DO
+	##Test
+	def successor(self, state):
+		"""Returns the necessary actions & states in the form of what direction the blank space and being moved 
+		and the current state of the board"""
+
+		successors = []
+		blank = state.index("0") #Updates where the 0/Blank is currently positioned
+
+		#Converting index to puzzle rows & column positions
+		r = blank//3
+		c = blank%3
+
+		def swap(stateT, pos1, pos2):
+			"""
+			stateT: Current state of the board (with a T added cause I named 2 vars the same thing by accident)
+			pos1: index of first position in the swap
+			pos2: index of the position to swap to
+			"""
+			stateT = list(stateT)
+			stateTemp = stateT[pos1]
+			stateT[pos1] = stateT[pos2]
+			stateT[pos2] = stateTemp
+			return "".join(stateT) #I absolutely hate that this is the easiest way to convert to a string but here we are
+		
+		#If UP
+		if (r>0):
+			newState = swap(state, blank, blank-3)
+			successors.append(("UP", newState))
+		#If LEFT
+		if (c > 0):
+			newState = swap(state, blank, blank-1)
+			successors.append(("LEFT", newState))
+		#If #DOWN
+		if r < 2:
+			newState = swap(state, blank, blank+3)
+			successors.append(("DOWN", newState))
+		#If #RIGHT
+		if(c<2):
+			newState = swap(state, blank, blank+1)
+			successors.append(("RIGHT", newState))
+		return successors
+	
+	##UNNEEDED CUZ I JUST NEED THEM TO DO WHAT THEY ALREADY DO
 	# def goal_test(self, state):
 	# 	"""Return True if the state is a goal. The default method compares the
 	# 	state to self.goal, as specified in the constructor. Implement this
@@ -328,9 +363,20 @@ class EightPuzzleProblem(Problem):
 	# 	return c + 1
 		
 	def h(self, node):
-		"""Return the heuristic function value for a particular node. Implement
-		this if using informed (heuristic) search."""
-		return 0
+		"""The sum of the tile distances from the goal positions"""
+		state = node.state
+		distance = 0
+
+		for i, tile in enumerate(state): #For all the tiles stored within the current nodes state,
+			if (tile != "0"):
+				goalIndex = int(tile)-1
+				curRow = i//3
+				curCol = i%3
+				goalRow = goalIndex//3
+				goalCol = goalIndex%3
+
+				distance += abs(curRow - goalRow) + abs(curCol-goalCol)
+		return distance
 #_________________________________________________________________________________
 
 ## Main
