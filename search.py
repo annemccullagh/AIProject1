@@ -382,9 +382,139 @@ class EightPuzzleProblem(Problem):
 ## Main
 
 def main():
-	'''REPLACE THIS CODE WITH CODE THAT RUNS THE PROGRAM SPECIFIED IN THE COMMAND ARGUMENTS'''
+	'''Process command line arguments and run the appropriate search algorithm'''
+	
+	if len(sys.argv) < 3:
+		print("Usage: python search.py <problem> <algorithm> [args...]")
+		return
+	
+	problem_type = sys.argv[1].lower()
+	algorithm = sys.argv[2].lower()
+	
+	# Determine which search function to use
+	search_func = None
+	if algorithm == 'dfs':
+		search_func = depth_first_search
+	elif algorithm == 'bfs':
+		search_func = breadth_first_search
+	elif algorithm == 'ucs':
+		search_func = uniform_cost_search
+	elif algorithm == 'astar':
+		search_func = astar_search
+	else:
+		print(f"Error: Unknown algorithm '{algorithm}'. Must be dfs, bfs, ucs, or astar.")
+		return
+	
+	# Create and solve the problem based on type
+	problem = None
+	result_node = None
+	nodes_visited = 0
+	
+	if problem_type == 'boston':
+		# Format: python search.py boston <algorithm> <start_station> <goal_station> [radius]
+		if len(sys.argv) < 5:
+			print("Usage: python search.py boston <algorithm> <start_station> <goal_station> [radius]")
+			return
+		
+		start_name = sys.argv[3]
+		goal_name = sys.argv[4]
+		radius = float(sys.argv[5]) if len(sys.argv) > 5 else 0
+		
+		subway_map = build_boston_map()
+		start_station = None
+		goal_station = None
+		
+		for station in subway_map.stations.values():
+			if station.name == start_name:
+				start_station = station
+			if station.name == goal_name:
+				goal_station = station
+		
+		if not start_station or not goal_station:
+			print("Error: Could not find one or both stations in Boston map")
+			return
+		
+		problem = SubwayNavigationProblem(start_station, goal_station, subway_map, radius)
+		result_node, nodes_visited = search_func(problem)
+		
+		# Output results
+		if result_node is None:
+			print("No solution found")
+		else:
+			path = result_node.path()
+			print("Path:")
+			for node in path:
+				print(node.state.name)
+			print(f"Total cost: {result_node.path_cost}")
+			print(f"Nodes visited: {nodes_visited}")
+	
+	elif problem_type == 'london':
+		# Format: python search.py london <algorithm> <start_station> <goal_station> [radius]
+		if len(sys.argv) < 5:
+			print("Usage: python search.py london <algorithm> <start_station> <goal_station> [radius]")
+			return
+		
+		start_name = sys.argv[3]
+		goal_name = sys.argv[4]
+		radius = float(sys.argv[5]) if len(sys.argv) > 5 else 0
+		
+		subway_map = build_london_map()
+		start_station = None
+		goal_station = None
+		
+		for station in subway_map.stations.values():
+			if station.name == start_name:
+				start_station = station
+			if station.name == goal_name:
+				goal_station = station
+		
+		if not start_station or not goal_station:
+			print("Error: Could not find one or both stations in London map")
+			return
+		
+		problem = SubwayNavigationProblem(start_station, goal_station, subway_map, radius)
+		result_node, nodes_visited = search_func(problem)
+		
+		# Output results
+		if result_node is None:
+			print("No solution found")
+		else:
+			path = result_node.path()
+			print("Path:")
+			for node in path:
+				print(node.state.name)
+			print(f"Total cost: {result_node.path_cost}")
+			print(f"Nodes visited: {nodes_visited}")
+	
+	elif problem_type == 'eight':
+		# Format: python search.py eight <algorithm> <initial_state>
+		if len(sys.argv) < 4:
+			print("Usage: python search.py eight <algorithm> <initial_state>")
+			return
+		
+		initial_state = sys.argv[3]
+		if len(initial_state) != 9 or not initial_state.isdigit():
+			print("Error: Initial state must be 9 digits (0 represents blank)")
+			return
+		
+		problem = EightPuzzleProblem(initial_state)
+		result_node, nodes_visited = search_func(problem)
+		
+		# Output results
+		if result_node is None:
+			print("No solution found")
+		else:
+			path = result_node.path()
+			print("Path:")
+			for node in path:
+				print(node.state)
+			print(f"Total cost: {result_node.path_cost}")
+			print(f"Nodes visited: {nodes_visited}")
+	
+	else:
+		print(f"Error: Unknown problem type '{problem_type}'. Must be boston, london, or eight.")
+		return
 
-	print(sys.argv) # Prints the command line arguments. Note that the 0th element is the name of the file (search.py).
 
-
-main()
+if __name__ == "__main__":
+	main()
