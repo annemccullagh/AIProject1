@@ -179,32 +179,36 @@ def breadth_first_search(problem):
 		return node, 1
 	
 	frontier = deque([node])
+	frontier_states = {node.state}  # Track states in frontier for efficiency
 	explored = set()
 	nodes_visited = 0
 	
 	while frontier:
 		node = frontier.popleft()
+		frontier_states.discard(node.state)
 		nodes_visited += 1
 		explored.add(node.state)
 		
 		for child in node.expand(problem):
-			if child.state not in explored and child not in frontier:
+			if child.state not in explored and child.state not in frontier_states:
 				if problem.goal_test(child.state):
 					return child, nodes_visited
 				frontier.append(child)
+				frontier_states.add(child.state)
 	
 	return None, nodes_visited
-	pass
 	
 def depth_first_search(problem):
 	"""Depth-first graph search algorithm."""
 	node = Node(problem.initial)
 	frontier = [node]
+	frontier_states = {node.state}  # Track states in frontier for efficiency
 	explored = set()
 	nodes_visited = 0
 	
 	while frontier:
 		node = frontier.pop()
+		frontier_states.discard(node.state)
 		nodes_visited += 1
 		
 		if problem.goal_test(node.state):
@@ -213,8 +217,9 @@ def depth_first_search(problem):
 		explored.add(node.state)
 		
 		for child in node.expand(problem):
-			if child.state not in explored and child not in frontier:
+			if child.state not in explored and child.state not in frontier_states:
 				frontier.append(child)
+				frontier_states.add(child.state)
 	
 	return None, nodes_visited
 def uniform_cost_search(problem):

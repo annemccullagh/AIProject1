@@ -145,15 +145,15 @@ def straight_line_distance(station1, station2):
 
 def build_boston_map():
 	"""Returns a SubwayMap object representing the Boston T map"""
-	boston_station_file = "../data/boston_stations.csv"
-	boston_link_file = "../data/boston_links.csv"
+	boston_station_file = "data/boston_stations.csv"
+	boston_link_file = "data/boston_links.csv"
 	
 	return build_map(boston_station_file, boston_link_file)
 	
 def build_london_map():
 	"""Returns a SubwayMap object representing the London Underground map"""
-	london_station_file = "../data/london_stations.csv"
-	london_link_file = "../data/london_links.csv"
+	london_station_file = "data/london_stations.csv"
+	london_link_file = "data/london_links.csv"
 	
 	return build_map(london_station_file, london_link_file)
 	
