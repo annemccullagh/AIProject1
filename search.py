@@ -221,8 +221,9 @@ def depth_first_search(problem):
 				frontier_states.add(child.state)
 	
 	return None, nodes_visited
+	
 def uniform_cost_search(problem):
-"""Uniform-cost graph search algorithm."""
+	"""Uniform-cost graph search algorithm."""
 	node = Node(problem.initial)
 	frontier = []
 	heapq.heappush(frontier, (node.path_cost, node))
