@@ -18,7 +18,6 @@ then create problem instances and solve them with calls to the various search
 functions."""
 #imports needed for code 
 import sys
-import sys
 from collections import deque
 import heapq
 from subway import SubwayMap, build_boston_map, build_london_map, straight_line_distance
