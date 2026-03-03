@@ -172,20 +172,20 @@ class SubwayNavigationProblem(Problem):
 
 def breadth_first_search(problem):
 	"""Breadth-first graph search algorithm."""
-	# early goal test for BFS
+	# Early goal test for BFS
 	node = Node(problem.initial)
 	if problem.goal_test(node.state):
 		return node, 1
 	
 	frontier = deque([node])
-	frontier_states = {node.state}  # Track states in frontier for efficiency
 	explored = set()
+	frontier_states = {node.state}
 	nodes_visited = 0
 	
 	while frontier:
 		node = frontier.popleft()
-		frontier_states.discard(node.state)
 		nodes_visited += 1
+		frontier_states.remove(node.state)
 		explored.add(node.state)
 		
 		for child in node.expand(problem):
@@ -201,14 +201,14 @@ def depth_first_search(problem):
 	"""Depth-first graph search algorithm."""
 	node = Node(problem.initial)
 	frontier = [node]
-	frontier_states = {node.state}  # Track states in frontier for efficiency
 	explored = set()
+	frontier_states = {node.state}
 	nodes_visited = 0
 	
 	while frontier:
 		node = frontier.pop()
-		frontier_states.discard(node.state)
 		nodes_visited += 1
+		frontier_states.remove(node.state)
 		
 		if problem.goal_test(node.state):
 			return node, nodes_visited
@@ -222,7 +222,7 @@ def depth_first_search(problem):
 	
 	return None, nodes_visited
 def uniform_cost_search(problem):
-	"""Uniform-cost graph search algorithm."""
+"""Uniform-cost graph search algorithm."""
 	node = Node(problem.initial)
 	frontier = []
 	heapq.heappush(frontier, (node.path_cost, node))
@@ -231,21 +231,22 @@ def uniform_cost_search(problem):
 	
 	while frontier:
 		_, node = heapq.heappop(frontier)
-		nodes_visited += 1
 		
 		if problem.goal_test(node.state):
+			nodes_visited += 1
 			return node, nodes_visited
 		
+		nodes_visited += 1
 		explored.add(node.state)
 		
 		for child in node.expand(problem):
 			if child.state not in explored:
-				# check if child in frontier
+				# Check if child is already in frontier
 				in_frontier = False
 				for i, (priority, frontier_node) in enumerate(frontier):
 					if frontier_node.state == child.state:
 						in_frontier = True
-						# ff found with higher cost, replace 
+						# If found with higher cost, replace it
 						if child.path_cost < priority:
 							frontier[i] = (child.path_cost, child)
 							heapq.heapify(frontier)
@@ -269,23 +270,24 @@ def astar_search(problem):
 	
 	while frontier:
 		_, node = heapq.heappop(frontier)
-		nodes_visited += 1
 		
 		if problem.goal_test(node.state):
+			nodes_visited += 1
 			return node, nodes_visited
 		
+		nodes_visited += 1
 		explored.add(node.state)
 		
 		for child in node.expand(problem):
 			if child.state not in explored:
 				child_f = child.path_cost + problem.h(child)
 				
-				# check if child in frontier
+				# Check if child is already in frontier
 				in_frontier = False
 				for i, (priority, frontier_node) in enumerate(frontier):
 					if frontier_node.state == child.state:
 						in_frontier = True
-						# if higher f-score found, replace
+						# If found with higher f-score, replace it
 						if child_f < priority:
 							frontier[i] = (child_f, child)
 							heapq.heapify(frontier)
