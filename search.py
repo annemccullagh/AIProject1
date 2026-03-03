@@ -406,10 +406,7 @@ def main():
 			return
 		
 		algorithm = sys.argv[2].lower()
-		initial_state_str = sys.argv[3]
-		
-		# Convert string to tuple
-		initial_state = tuple(int(c) for c in initial_state_str)
+		initial_state = sys.argv[3]  # Keep as string to match EightPuzzleProblem
 		
 		if len(initial_state) != 9:
 			print("Error: Initial state must have exactly 9 digits")
@@ -469,10 +466,10 @@ def main():
 		print("No solution found")
 	else:
 		path = result.path()
-		print(f"\nSolution found!")
-		print(f"Path ({len(path)} stations):")
 		
 		if problem_type == "eight":
+			print(f"\nSolution found!")
+			print(f"Path ({len(path)} steps):")
 			# For eight puzzle, show the states
 			for i, node in enumerate(path):
 				state = node.state
@@ -481,6 +478,8 @@ def main():
 				print(f"{state[3]} {state[4]} {state[5]}")
 				print(f"{state[6]} {state[7]} {state[8]}")
 		else:
+			print(f"\nSolution found!")
+			print(f"Path ({len(path)} stations):")
 			# For subway, show station names
 			for node in path:
 				print(f"  {node.state.name}")
@@ -489,4 +488,3 @@ def main():
 		print(f"Nodes visited: {nodes_visited}")
 
 main()
-
