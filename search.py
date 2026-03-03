@@ -387,139 +387,104 @@ class EightPuzzleProblem(Problem):
 ## Main
 
 def main():
-	'''Process command line arguments and run the appropriate search algorithm'''
+	"""Run the search based on command line arguments."""
 	
-	if len(sys.argv) < 3:
+	if len(sys.argv) < 2:
 		print("Usage: python search.py <problem> <algorithm> [args...]")
+		print("  Subway: python search.py <boston|london> <dfs|bfs|ucs|astar> <start> <goal> [radius]")
+		print("  Eight:  python search.py eight <dfs|bfs|ucs|astar> <initial_state>")
 		return
 	
 	problem_type = sys.argv[1].lower()
-	algorithm = sys.argv[2].lower()
 	
-	# Determine which search function to use
-	search_func = None
-	if algorithm == 'dfs':
-		search_func = depth_first_search
-	elif algorithm == 'bfs':
-		search_func = breadth_first_search
-	elif algorithm == 'ucs':
-		search_func = uniform_cost_search
-	elif algorithm == 'astar':
-		search_func = astar_search
-	else:
-		print(f"Error: Unknown algorithm '{algorithm}'. Must be dfs, bfs, ucs, or astar.")
-		return
-	
-	# Create and solve the problem based on type
-	problem = None
-	result_node = None
-	nodes_visited = 0
-	
-	if problem_type == 'boston':
-		# Format: python search.py boston <algorithm> <start_station> <goal_station> [radius]
-		if len(sys.argv) < 5:
-			print("Usage: python search.py boston <algorithm> <start_station> <goal_station> [radius]")
-			return
-		
-		start_name = sys.argv[3]
-		goal_name = sys.argv[4]
-		radius = float(sys.argv[5]) if len(sys.argv) > 5 else 0
-		
-		subway_map = build_boston_map()
-		start_station = None
-		goal_station = None
-		
-		for station in subway_map.stations.values():
-			if station.name == start_name:
-				start_station = station
-			if station.name == goal_name:
-				goal_station = station
-		
-		if not start_station or not goal_station:
-			print("Error: Could not find one or both stations in Boston map")
-			return
-		
-		problem = SubwayNavigationProblem(start_station, goal_station, subway_map, radius)
-		result_node, nodes_visited = search_func(problem)
-		
-		# Output results
-		if result_node is None:
-			print("No solution found")
-		else:
-			path = result_node.path()
-			print("Path:")
-			for node in path:
-				print(node.state.name)
-			print(f"Total cost: {result_node.path_cost}")
-			print(f"Nodes visited: {nodes_visited}")
-	
-	elif problem_type == 'london':
-		# Format: python search.py london <algorithm> <start_station> <goal_station> [radius]
-		if len(sys.argv) < 5:
-			print("Usage: python search.py london <algorithm> <start_station> <goal_station> [radius]")
-			return
-		
-		start_name = sys.argv[3]
-		goal_name = sys.argv[4]
-		radius = float(sys.argv[5]) if len(sys.argv) > 5 else 0
-		
-		subway_map = build_london_map()
-		start_station = None
-		goal_station = None
-		
-		for station in subway_map.stations.values():
-			if station.name == start_name:
-				start_station = station
-			if station.name == goal_name:
-				goal_station = station
-		
-		if not start_station or not goal_station:
-			print("Error: Could not find one or both stations in London map")
-			return
-		
-		problem = SubwayNavigationProblem(start_station, goal_station, subway_map, radius)
-		result_node, nodes_visited = search_func(problem)
-		
-		# Output results
-		if result_node is None:
-			print("No solution found")
-		else:
-			path = result_node.path()
-			print("Path:")
-			for node in path:
-				print(node.state.name)
-			print(f"Total cost: {result_node.path_cost}")
-			print(f"Nodes visited: {nodes_visited}")
-	
-	elif problem_type == 'eight':
-		# Format: python search.py eight <algorithm> <initial_state>
+	if problem_type == "eight":
+		# Eight puzzle problem
 		if len(sys.argv) < 4:
 			print("Usage: python search.py eight <algorithm> <initial_state>")
 			return
 		
-		initial_state = sys.argv[3]
-		if len(initial_state) != 9 or not initial_state.isdigit():
-			print("Error: Initial state must be 9 digits (0 represents blank)")
+		algorithm = sys.argv[2].lower()
+		initial_state_str = sys.argv[3]
+		
+		# Convert string to tuple
+		initial_state = tuple(int(c) for c in initial_state_str)
+		
+		if len(initial_state) != 9:
+			print("Error: Initial state must have exactly 9 digits")
 			return
 		
 		problem = EightPuzzleProblem(initial_state)
-		result_node, nodes_visited = search_func(problem)
 		
-		# Output results
-		if result_node is None:
-			print("No solution found")
+	elif problem_type in ["boston", "london"]:
+		# Subway navigation problem
+		if len(sys.argv) < 5:
+			print("Usage: python search.py <boston|london> <algorithm> <start> <goal> [radius]")
+			return
+		
+		algorithm = sys.argv[2].lower()
+		start_name = sys.argv[3]
+		goal_name = sys.argv[4]
+		radius = float(sys.argv[5]) if len(sys.argv) > 5 else 0
+		
+		# Build the subway map
+		if problem_type == "boston":
+			subway_map = build_boston_map()
 		else:
-			path = result_node.path()
-			print("Path:")
-			for node in path:
-				print(node.state)
-			print(f"Total cost: {result_node.path_cost}")
-			print(f"Nodes visited: {nodes_visited}")
+			subway_map = build_london_map()
+		
+		# Get stations
+		start_station = subway_map.get_station_by_name(start_name)
+		goal_station = subway_map.get_station_by_name(goal_name)
+		
+		if start_station is None:
+			print(f"Error: Start station '{start_name}' not found")
+			return
+		if goal_station is None:
+			print(f"Error: Goal station '{goal_name}' not found")
+			return
+		
+		problem = SubwayNavigationProblem(start_station, goal_station, subway_map, radius)
 	
 	else:
-		print(f"Error: Unknown problem type '{problem_type}'. Must be boston, london, or eight.")
+		print(f"Error: Unknown problem type '{problem_type}'")
 		return
+	
+	# Run the appropriate search algorithm
+	if algorithm == "dfs":
+		result, nodes_visited = depth_first_search(problem)
+	elif algorithm == "bfs":
+		result, nodes_visited = breadth_first_search(problem)
+	elif algorithm == "ucs":
+		result, nodes_visited = uniform_cost_search(problem)
+	elif algorithm == "astar":
+		result, nodes_visited = astar_search(problem)
+	else:
+		print(f"Error: Unknown algorithm '{algorithm}'")
+		return
+	
+	# Print results
+	if result is None:
+		print("No solution found")
+	else:
+		path = result.path()
+		print(f"\nSolution found!")
+		print(f"Path ({len(path)} stations):")
+		
+		if problem_type == "eight":
+			# For eight puzzle, show the states
+			for i, node in enumerate(path):
+				state = node.state
+				print(f"\nStep {i}:")
+				print(f"{state[0]} {state[1]} {state[2]}")
+				print(f"{state[3]} {state[4]} {state[5]}")
+				print(f"{state[6]} {state[7]} {state[8]}")
+		else:
+			# For subway, show station names
+			for node in path:
+				print(f"  {node.state.name}")
+		
+		print(f"\nTotal cost: {result.path_cost:.2f}")
+		print(f"Nodes visited: {nodes_visited}")
 
+main()
 
-if __name__ == "__main__":
-	main()
